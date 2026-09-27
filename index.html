@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Corazón de Estrellas</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
+    background: #000;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 48px;
+  }
+  canvas {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+    height: auto;
+  }
+  #poema {
+    color: #d8b4fe;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-style: italic;
+    text-align: center;
+    line-height: 1.8;
+    max-width: 520px;
+    padding: 0 24px;
+    margin-top: 8px;
+    white-space: pre-line;
+    text-shadow: 0 0 12px rgba(168, 85, 247, 0.35);
+  }
+</style>
+</head>
+<body>
+<canvas id="canvas" width="600" height="600"></canvas>
+<p id="poema"></p>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const cx0 = canvas.width / 2;
+const cy0 = canvas.height / 2;
+
+const N = 500;
+const stars = [];
+
+for (let i = 0; i < N; i++) {
+  const a = 2 * Math.PI * (i / N);
+  const baseX = 16 * Math.pow(Math.sin(a), 3) * 11;
+  const baseY = (13 * Math.cos(a) - 5 * Math.cos(2 * a) - 2 * Math.cos(3 * a) - Math.cos(4 * a)) * 11;
+
+  const tx = baseX + (Math.random() * 30 - 15);
+  const ty = baseY + (Math.random() * 30 - 15);
+
+  const sx = Math.random() * 640 - 320;
+  const sy = Math.random() * 640 - 320;
+  const size = 2.5 + Math.random() * 3;
+
+  stars.push({ sx, sy, tx, ty, size });
+}
+
+function drawStar(x, y, size) {
+  ctx.strokeStyle = "#a855f7";
+  ctx.lineWidth = 1.2;
+  for (const angle of [0, 45, 90, 135]) {
+    const rad = angle * Math.PI / 180;
+    const dx = size * Math.cos(rad);
+    const dy = size * Math.sin(rad);
+    ctx.beginPath();
+    ctx.moveTo(cx0 + (x - dx), cy0 - (y - dy));
+    ctx.lineTo(cx0 + (x + dx), cy0 - (y + dy));
+    ctx.stroke();
+  }
+}
+
+const durationMs = 4000; // sube este número para hacerla aún más lenta (ej. 6000, 8000)
+let startTime = null;
+let animationDone = false;
+
+function animate(timestamp) {
+  if (startTime === null) startTime = timestamp;
+  const elapsed = timestamp - startTime;
+
+  ctx.fillStyle = "black";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const progress = Math.min(elapsed / durationMs, 1);
+  const eased = Math.sin(progress * Math.PI / 2);
+
+  for (const star of stars) {
+    const cx = star.sx + (star.tx - star.sx) * eased;
+    const cy = star.sy + (star.ty - star.sy) * eased;
+    drawStar(cx, cy, star.size);
+  }
+
+  if (progress < 1) {
+    requestAnimationFrame(animate);
+  } else if (!animationDone) {
+    animationDone = true;
+    // Deja el corazón dibujado; para repetir la animación, recarga la página.
+  }
+}
+
+requestAnimationFrame(animate);
+
+// --- Generador de poema aleatorio ---
+// Poemas originales, inspirados libremente en el tono intenso
+// y sensorial de Pablo Neruda (no son transcripciones de sus obras).
+// Cada visita elige uno al azar.
+const poemas = [
+`Te quiero como se quiere lo que duele,
+con la misma hambre con que el mar muerde la arena.
+No es un amor tranquilo el que te tengo,
+es una herida que canto, que respiro, que cargo despierta.
+
+Cuando no estás, hasta el aire pesa,
+las horas se estiran como noches sin final,
+y en tu ausencia se filtra la certeza:
+si duelo así, tanto, es porque de verdad amo.
+
+Quiero llenarte de estrellas hasta que sobren,
+ser el silencio donde se calman tus tormentas,
+y aunque a veces me quema quererte tanto,
+prefiero este incendio a cualquier calma tibia.`,
+
+`Podría hablar de ti con palabras pequeñas,
+pero tú mereces que se me rompa la voz.
+Te llevo como se lleva una quemadura antigua,
+esa que no sana porque no quiere sanar.
+
+Eres el hambre que no se cura comiendo,
+la sed que crece cada vez que bebo de tu nombre.
+Si el amor fuera fácil no sería amor,
+sería otra cosa, más pequeña, más cobarde.
+
+Yo te quiero con esta furia que asusta,
+con este pecho que se parte y vuelve a armarse,
+porque prefiero dolerme entero por ti
+a no sentir nada en los brazos de nadie más.`,
+
+`Hay noches en que pienso en vos y me duele el cuerpo entero,
+como si el recuerdo tuyo pesara más que los huesos.
+Te extraño con esa clase de extrañar que no descansa,
+que sigue despierto cuando ya todo se apagó.
+
+Si me preguntan cómo te quiero, no sé mentir:
+te quiero como el que ya no puede volver atrás,
+como el que se metió tan hondo en otro cuerpo
+que perdió la orilla y no le importa perderla.
+
+Que se quede este dolor si es el precio de tenerte,
+que se quede esta hoguera aunque a veces me consuma,
+porque un amor que no arde, que no cuesta, que no rompe,
+no alcanza para nombrarte a vos.`,
+
+`Voy a decirlo sin adornos, sin pudor:
+me dueles como duelen las cosas verdaderas.
+Cada vez que te vas se me cae algo dentro,
+y cada vez que vuelves se levanta de nuevo, entero.
+
+No te prometo un amor manso, de los que no se sienten,
+te prometo este que muerde, que exige, que no calla.
+Quiero tu boca como se quiere el último trago de agua,
+quiero tus manos como se quiere la orilla después del naufragio.
+
+Si esto es sufrir, entonces que me duela toda la vida,
+porque no hay hambre más honesta que la que tengo de vos,
+y prefiero mil veces esta herida que me nombra
+a cualquier paz que no te tenga adentro.`,
+
+`Te amo con la desesperación de quien sabe que todo se acaba,
+por eso no quiero un pedazo tuyo, te quiero entera, ahora.
+Con vos até mi voz, até mis noches, até este pecho
+que desde que llegaste no aprendió a estar tranquilo.
+
+A veces quererte se parece a una tormenta:
+todo se moja, todo se sacude, nada queda en su lugar,
+y aun así, cuando pasa, lo único que pido
+es que vuelva a llover, que vuelvas siempre vos.
+
+No busco un amor que no me cueste nada,
+busco este, el que arde, el que a veces también quema,
+porque prefiero incendiarme entero entre tus brazos
+a vivir apagado en cualquier otro lado.`
+];
+
+function generarPoema() {
+  return poemas[Math.floor(Math.random() * poemas.length)];
+}
+
+document.getElementById('poema').textContent = generarPoema();
+</script>
+</body>
+</html>
